@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#2563eb">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Missioni">
+  <title>Missioni di Casa</title>
+  <style>
+    :root{--card:#fff;--text:#172033;--muted:#667085;--line:#e7eaf0;--green:#138a43;--danger:#d92d20;--blue:#2563eb;--shadow:0 10px 28px rgba(15,23,42,.12);--radius:22px}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:linear-gradient(180deg,#f8fafc,#eef2ff);color:var(--text);-webkit-tap-highlight-color:transparent}
+    .app{max-width:560px;min-height:100dvh;margin:0 auto;padding:18px 14px 32px}
+    header{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:14px}
+    h1{margin:0;font-size:1.8rem;line-height:1.05;letter-spacing:-.04em}
+    .sub{margin:5px 0 0;color:var(--muted);font-size:.92rem}
+    .pill{border:1px solid var(--line);background:rgba(255,255,255,.9);border-radius:999px;padding:8px 11px;font-size:.78rem;color:var(--muted);font-weight:800;white-space:nowrap}
+    .tabs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0 14px}
+    .tab{border:0;border-radius:20px;padding:16px 12px;font-weight:950;font-size:1.05rem;color:#fff;box-shadow:var(--shadow);cursor:pointer}
+    .tab.small{background:linear-gradient(135deg,#ec4899,#8b5cf6)} .tab.big{background:linear-gradient(135deg,#111827,#2563eb)}
+    .tab.inactive{opacity:.46;transform:scale(.98);box-shadow:none}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+    .summary{padding:16px;margin-bottom:14px}
+    .summary-top{display:flex;justify-content:space-between;gap:12px}
+    .kid{margin:0;font-size:1.35rem;letter-spacing:-.02em}.week{margin-top:3px;color:var(--muted);font-size:.9rem}
+    .total{text-align:right;font-size:2rem;font-weight:950;letter-spacing:-.04em;line-height:1}.total-label{margin-top:3px;color:var(--muted);font-size:.78rem;font-weight:800;text-transform:uppercase;text-align:right}
+    .actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:14px}
+    .mini{border:1px solid var(--line);background:#fff;border-radius:15px;padding:12px 8px;font-weight:900;color:var(--text);cursor:pointer}.mini.primary{color:var(--blue)}.mini.danger{color:var(--danger)}
+    .section{margin:18px 4px 9px;font-size:1rem;font-weight:950;letter-spacing:.02em;text-transform:uppercase;color:#374151}
+    .missions{display:grid;gap:10px}
+    .mission{width:100%;border:1px solid rgba(229,231,235,.95);border-radius:22px;background:#fff;box-shadow:0 6px 18px rgba(15,23,42,.09);display:grid;grid-template-columns:54px 1fr auto;gap:12px;align-items:center;padding:13px 14px;text-align:left;cursor:pointer;min-height:76px}
+    .mission:active{transform:scale(.985)}
+    .icon{width:52px;height:52px;border-radius:18px;display:grid;place-items:center;font-size:1.85rem;background:#f3f4f6}.small-theme .icon{background:#fdf2f8}.big-theme .icon{background:#eff6ff}
+    .mt{font-size:1.05rem;font-weight:950;line-height:1.15;margin:0}.ms{margin-top:4px;color:var(--muted);font-size:.82rem}.amount{font-size:1.05rem;font-weight:950;color:var(--green);white-space:nowrap}
+    .bonus{background:linear-gradient(135deg,#fff7ed,#fdf2f8);border-color:#fed7aa}
+    .panel{padding:12px;margin-top:14px}.panel h3{margin:0 0 9px;font-size:1rem}
+    .row{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid #f3f4f6;font-size:.9rem}.row:first-of-type{border-top:0}.empty{color:var(--muted);font-size:.9rem}
+    dialog{border:0;border-radius:24px;padding:0;width:min(92vw,440px);box-shadow:var(--shadow)}dialog::backdrop{background:rgba(15,23,42,.42)}
+    .modal{padding:18px}.modal h2{margin:0 0 8px}.modal p{color:var(--muted);margin:0 0 16px}.modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .confirm,.cancel{border:0;border-radius:16px;padding:13px;font-weight:900;cursor:pointer}.confirm{background:var(--blue);color:white}.cancel{background:#f3f4f6;color:var(--text)}
+    .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(120px);background:#111827;color:#fff;padding:13px 16px;border-radius:999px;font-weight:900;box-shadow:var(--shadow);opacity:0;transition:.25s ease;z-index:20;white-space:nowrap}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    @media(max-width:390px){.mission{grid-template-columns:46px 1fr auto;padding:12px}.icon{width:46px;height:46px;font-size:1.55rem}.mt{font-size:.98rem}.amount{font-size:.96rem}.total{font-size:1.65rem}}
+  </style>
+</head>
+<body>
+  <div class="app" id="app">
+    <header><div><h1>Missioni di Casa</h1><p class="sub">Tap rapido. Totale automatico.</p></div><div class="pill" id="today"></div></header>
+    <div class="tabs"><button class="tab small" id="tSmall" onclick="setKid('small')">🐱 Piccolo</button><button class="tab big inactive" id="tBig" onclick="setKid('big')">⚡ Grande</button></div>
+    <section class="summary card"><div class="summary-top"><div><h2 class="kid" id="kidName"></h2><div class="week" id="week"></div></div><div><div class="total" id="total">CHF 0.00</div><div class="total-label">totale settimana</div></div></div><div class="actions"><button class="mini" onclick="undoLast()">↩︎ Annulla</button><button class="mini primary" onclick="askClose()">✓ Chiudi</button><button class="mini danger" onclick="askReset()">Reset</button></div></section>
+    <div class="section">Missioni retribuite</div><main class="missions" id="missions"></main>
+    <div class="section">Bonus</div><section class="missions" id="bonuses"></section>
+    <section class="panel card"><h3>Ultime registrazioni</h3><div id="log"></div></section>
+    <section class="panel card"><h3>Storico settimane chiuse</h3><div id="history"></div></section>
+  </div>
+  <dialog id="dlg"><div class="modal"><h2 id="dlgTitle"></h2><p id="dlgText"></p><div class="modal-actions"><button class="cancel" onclick="closeDialog()">Annulla</button><button class="confirm" id="dlgConfirm">Conferma</button></div></div></dialog>
+  <div class="toast" id="toast"></div>
+<script>
+const CONFIG={
+ small:{name:"Piccolo",cls:"small-theme",missions:[
+  {id:"apparecchiare",label:"Apparecchiare",amount:.5,icon:"🍽️"},{id:"sparecchiare",label:"Sparecchiare",amount:.5,icon:"🥣"},{id:"stanza",label:"Ordinare la stanza",amount:1,icon:"🧸"},{id:"spesa",label:"Aiutare a mettere via la spesa",amount:.5,icon:"🛒"},{id:"bagnetto",label:"Bagnetto spontaneo",amount:1,icon:"🛁"},{id:"vestirsi",label:"Vestirsi da solo",amount:1,icon:"👕"},{id:"cesta",label:"Mettere i vestiti sporchi nella cesta",amount:.5,icon:"🧺"}],
+  bonuses:[{id:"no_capricci",label:"5 giorni senza capricci",amount:2,icon:"⭐"}]},
+ big:{name:"Grande",cls:"big-theme",missions:[
+  {id:"apparecchiare",label:"Apparecchiare",amount:.5,icon:"🍽️"},{id:"sparecchiare",label:"Sparecchiare",amount:.5,icon:"🥣"},{id:"camera",label:"Ordinare la camera",amount:1,icon:"🛏️"},{id:"bucato",label:"Mettere via il proprio bucato",amount:1,icon:"🧺"},{id:"kenay",label:"Aiutare Kenay quando richiesto",amount:.5,icon:"👥"},{id:"bagnetto",label:"Bagnetto senza storie",amount:1,icon:"🛁"}],
+  bonuses:[{id:"zaino",label:"Preparare zaino/scuola autonomamente per 1 settimana",amount:2,icon:"🎒"},{id:"zero_lamentele",label:"Settimana zero lamentele inutili",amount:3,icon:"🏆"}]}
+};
+const KEY="missioniFamiglia.v1";let state=load(),kid=state.currentKid||"small",pending=null,toastTimer;
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||{currentKid:"small",entries:[],history:[]}}catch{return{currentKid:"small",entries:[],history:[]}}}
+function save(){state.currentKid=kid;localStorage.setItem(KEY,JSON.stringify(state))}
+function chf(v){return "CHF "+Number(v).toFixed(2)}
+function ws(d=new Date()){let x=new Date(d),day=x.getDay(),diff=day===0?-6:1-day;x.setDate(x.getDate()+diff);x.setHours(0,0,0,0);return x}
+function we(d=new Date()){let x=ws(d);x.setDate(x.getDate()+6);return x}
+function inWeek(iso){let d=new Date(iso),a=ws(),b=we();b.setHours(23,59,59,999);return d>=a&&d<=b}
+function entries(k=kid){return state.entries.filter(e=>e.kid===k&&inWeek(e.ts))}
+function total(){return entries().reduce((s,e)=>s+e.amount,0)}
+function setKid(k){kid=k;save();render()}
+function add(item,type){state.entries.push({kid,type,id:item.id,label:item.label,amount:item.amount,ts:new Date().toISOString()});save();render();show("Aggiunto: "+item.label+" +"+chf(item.amount))}
+function undoLast(){let rev=[...state.entries].reverse().findIndex(e=>e.kid===kid&&inWeek(e.ts));if(rev<0){show("Nessuna registrazione da annullare");return}let idx=state.entries.length-1-rev,r=state.entries.splice(idx,1)[0];save();render();show("Annullato: "+r.label)}
+function askClose(){pending=closeWeek;dlgTitle.textContent="Chiudere la settimana?";dlgText.textContent="Salvo nello storico il totale di "+CONFIG[kid].name+": "+chf(total())+".";dlgConfirm.onclick=runPending;dlg.showModal()}
+function closeWeek(){state.history.unshift({kid,total:total(),from:ws().toISOString(),to:we().toISOString(),closedAt:new Date().toISOString()});save();render();show("Settimana salvata")}
+function askReset(){pending=resetWeek;dlgTitle.textContent="Reset settimana?";dlgText.textContent="Cancello solo le registrazioni della settimana corrente per "+CONFIG[kid].name+".";dlgConfirm.onclick=runPending;dlg.showModal()}
+function resetWeek(){state.entries=state.entries.filter(e=>!(e.kid===kid&&inWeek(e.ts)));save();render();show("Settimana azzerata")}
+function runPending(){if(pending)pending();pending=null;closeDialog()}function closeDialog(){dlg.close()}
+function list(id,arr,type){document.getElementById(id).innerHTML=arr.map(i=>`<button class="mission ${type==="bonus"?"bonus":""}" onclick='add(${JSON.stringify(i)},"${type}")'><div class="icon">${i.icon}</div><div><p class="mt">${i.label}</p><div class="ms">Tocca per aggiungere</div></div><div class="amount">${chf(i.amount)}</div></button>`).join("")}
+function renderLog(){let a=entries().slice().reverse().slice(0,8);log.innerHTML=a.length?a.map(e=>`<div class="row"><span>${new Date(e.ts).toLocaleDateString("it-CH",{weekday:"short",day:"2-digit",month:"2-digit"})} · ${e.label}</span><strong>${chf(e.amount)}</strong></div>`).join(""):`<div class="empty">Ancora nessuna registrazione questa settimana.</div>`}
+function renderHistory(){let a=state.history.filter(h=>h.kid===kid).slice(0,6);history.innerHTML=a.length?a.map(h=>`<div class="row"><span>${new Date(h.from).toLocaleDateString("it-CH")} - ${new Date(h.to).toLocaleDateString("it-CH")}</span><strong>${chf(h.total)}</strong></div>`).join(""):`<div class="empty">Nessuna settimana chiusa.</div>`}
+function render(){let c=CONFIG[kid];app.className="app "+c.cls;kidName.textContent=(kid==="small"?"🐱 ":"⚡ ")+c.name;week.textContent=ws().toLocaleDateString("it-CH")+" - "+we().toLocaleDateString("it-CH");today.textContent=new Date().toLocaleDateString("it-CH",{weekday:"short",day:"2-digit",month:"2-digit"});totalEl=document.getElementById("total");totalEl.textContent=chf(total());tSmall.classList.toggle("inactive",kid!=="small");tBig.classList.toggle("inactive",kid!=="big");list("missions",c.missions,"mission");list("bonuses",c.bonuses,"bonus");renderLog();renderHistory()}
+function show(t){toast.textContent=t;toast.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove("show"),1600)}
+render();
+</script>
+</body>
+</html>
